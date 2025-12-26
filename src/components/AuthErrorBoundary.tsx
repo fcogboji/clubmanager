@@ -1,7 +1,7 @@
 "use client";
 
 import { Component, ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface Props {
   children: ReactNode;
@@ -75,12 +75,12 @@ class AuthErrorBoundaryInner extends Component<Props, State> {
               <p className="text-gray-600 mb-6">
                 Your session has expired. Please sign in again to continue.
               </p>
-              <a
+              <Link
                 href="/sign-in"
                 className="inline-block gradient-primary text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
               >
                 Sign In Again
-              </a>
+              </Link>
             </div>
           </div>
         );
