@@ -1,0 +1,315 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  name      String?
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  clubs     Club[]
+
+  @@index([clerkId])
+  @@index([email])
+}
+
+model Club {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String?
+  logoUrl     String?
+  phone       String?
+  email       String?
+  address     String?
+  website     String?
+
+  // Stripe Connect
+  stripeAccountId        String?
+  stripeOnboarded        Boolean @default(false)
+  stripeDetailsSubmitted Boolean @default(false)
+  stripeChargesEnabled   Boolean @default(false)
+
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  classes         Class[]
+  members         Member[]
+  membershipPlans MembershipPlan[]
+  messages        Message[]
+  sessions        Session[]
+  parentAccounts  ParentAccount[]
+
+  @@index([ownerId])
+  @@index([slug])
+}
+
+model Class {
+  id        String   @id @default(cuid())
+  name      String
+  day       String
+  time      String
+  clubId    String
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attendances Attendance[]
+  club        Club         @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  members     Member[]
+  sessions    Session[]
+
+  @@index([clubId])
+  @@index([status])
+}
+
+model MembershipPlan {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  amount      Int     // Amount in pence
+  interval    String  @default("month") // month, year, week
+  isActive    Boolean @default(true)
+
+  clubId    String
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members Member[]
+
+  @@index([clubId])
+}
+
+model Member {
+  id          String    @id @default(cuid())
+  firstName   String
+  lastName    String
+  dateOfBirth DateTime?
+  photoUrl    String?
+  notes       String?
+  status      String    @default("active") // active, inactive, lapsed
+
+  // Parent/Guardian info
+  parentName  String
+  parentEmail String
+  parentPhone String?
+
+  // Emergency contact
+  emergencyContactName  String?
+  emergencyContactPhone String?
+
+  // Relationships
+  clubId           String
+  club             Club            @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  classId          String?
+  class            Class?          @relation(fields: [classId], references: [id])
+  membershipPlanId String?
+  membershipPlan   MembershipPlan? @relation(fields: [membershipPlanId], references: [id], onDelete: SetNull)
+  parentAccountId  String?
+  parentAccount    ParentAccount?  @relation(fields: [parentAccountId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subscription Subscription?
+  attendances  Attendance[]
+
+  @@index([clubId])
+  @@index([classId])
+  @@index([status])
+  @@index([parentEmail])
+  @@index([membershipPlanId])
+  @@index([parentAccountId])
+}
+
+model ParentAccount {
+  id           String  @id @default(cuid())
+  email        String
+  passwordHash String
+  name         String
+  phone        String?
+
+  // Email verification
+  emailVerified Boolean @default(false)
+  verifyToken   String?
+
+  // Password reset
+  resetToken       String?
+  resetTokenExpiry DateTime?
+
+  clubId    String
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members Member[]
+
+  @@unique([email, clubId])
+  @@index([clubId])
+  @@index([email])
+}
+
+model Subscription {
+  id                 String    @id @default(cuid())
+  stripeSubId        String    @unique
+  stripeCustomerId   String
+  status             String
+  amount             Int
+  currency           String    @default("gbp")
+  interval           String    @default("month")
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean   @default(false)
+  memberId           String    @unique
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  invoices Invoice[]
+  member   Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([stripeCustomerId])
+  @@index([stripeSubId])
+}
+
+model Invoice {
+  id              String   @id @default(cuid())
+  stripeInvoiceId String   @unique
+  amount          Int
+  currency        String   @default("gbp")
+  status          String
+  pdfUrl          String?
+  hostedUrl       String?
+  subscriptionId  String
+  createdAt       DateTime @default(now())
+  paidAt          DateTime?
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([stripeInvoiceId])
+  @@index([subscriptionId])
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  date        DateTime
+  startTime   String
+  endTime     String
+  location    String?
+  isCancelled Boolean  @default(false)
+
+  classId String?
+  class   Class?  @relation(fields: [classId], references: [id], onDelete: SetNull)
+  clubId  String
+  club    Club    @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attendances Attendance[]
+
+  @@index([clubId])
+  @@index([classId])
+  @@index([date])
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  date      DateTime
+  status    String   // present, absent, late, excused
+  notes     String?
+  memberId  String
+  classId   String
+  sessionId String?
+  createdAt DateTime @default(now())
+
+  class   Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  member  Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  session Session? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@unique([memberId, classId, date])
+  @@index([memberId])
+  @@index([classId])
+  @@index([sessionId])
+  @@index([date])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  subject   String
+  content   String
+  type      String   @default("email") // email, sms
+  status    String   @default("sent") // draft, sent, failed
+
+  // Recipient info (stored for history)
+  recipientCount  Int
+  recipientFilter String? // JSON string of filter criteria used
+
+  clubId    String
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  recipients MessageRecipient[]
+
+  @@index([clubId])
+  @@index([createdAt])
+}
+
+model MessageRecipient {
+  id        String   @id @default(cuid())
+  email     String
+  name      String
+  status    String   @default("sent") // sent, delivered, failed, bounced
+
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([messageId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String
+  entityId  String
+  metadata  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entity, entityId])
+  @@index([userId])
+}
+
+model EmailLog {
+  id      String   @id @default(cuid())
+  to      String
+  subject String
+  type    String
+  status  String
+  error   String?
+  sentAt  DateTime @default(now())
+
+  @@index([sentAt])
+  @@index([to])
+  @@index([type])
+}
