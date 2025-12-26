@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
   Users,
@@ -113,10 +114,13 @@ export default function PortalDashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               {profile.club.logoUrl ? (
-                <img
+                <Image
                   src={profile.club.logoUrl}
                   alt={profile.club.name}
+                  width={48}
+                  height={48}
                   className="w-12 h-12 rounded-xl object-cover"
+                  unoptimized
                 />
               ) : (
                 <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">

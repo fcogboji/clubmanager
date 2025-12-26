@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Image from "next/image";
 import {
   Users,
   Building2,
@@ -190,10 +191,13 @@ async function UsersContent() {
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
                         {user.imageUrl ? (
-                          <img
+                          <Image
                             src={user.imageUrl}
                             alt=""
+                            width={40}
+                            height={40}
                             className="w-10 h-10 rounded-xl object-cover"
+                            unoptimized
                           />
                         ) : (
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
