@@ -1,16 +1,15 @@
-import { Resend } from "resend";
+// Dynamic import to avoid build-time errors when env var is not set
+let resendInstance: unknown = null;
 
-// Lazy initialization to avoid build-time errors when env var is not set
-let resend: Resend | null = null;
-
-function getResend(): Resend {
-  if (!resend) {
+async function getResend() {
+  if (!resendInstance) {
     if (!process.env.RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY environment variable is not set");
     }
-    resend = new Resend(process.env.RESEND_API_KEY);
+    const { Resend } = await import("resend");
+    resendInstance = new Resend(process.env.RESEND_API_KEY);
   }
-  return resend;
+  return resendInstance as { emails: { send: (params: { from: string; to: string[]; subject: string; html: string }) => Promise<{ data: unknown; error: unknown }> } };
 }
 
 const FROM_EMAIL = process.env.EMAIL_FROM || "Club Manager <noreply@resend.dev>";
@@ -45,7 +44,8 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
       }
     }
 
-    const { data, error } = await getResend().emails.send({
+    const resend = await getResend();
+    const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: Array.isArray(to) ? to : [to],
       subject,
