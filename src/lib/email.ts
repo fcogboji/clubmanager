@@ -1,6 +1,17 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization to avoid build-time errors when env var is not set
+let resend: Resend | null = null;
+
+function getResend(): Resend {
+  if (!resend) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY environment variable is not set");
+    }
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+}
 
 const FROM_EMAIL = process.env.EMAIL_FROM || "Club Manager <noreply@resend.dev>";
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
@@ -34,7 +45,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
       }
     }
 
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResend().emails.send({
       from: FROM_EMAIL,
       to: Array.isArray(to) ? to : [to],
       subject,
