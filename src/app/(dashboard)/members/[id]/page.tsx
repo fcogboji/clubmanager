@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import {
   ArrowLeft,
   Mail,
@@ -29,12 +29,9 @@ interface Member {
   subscription?: { status: string; amount: number };
 }
 
-export default function MemberDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const { id } = params;
+export default function MemberDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
   const router = useRouter();
   const [member, setMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState(true);
