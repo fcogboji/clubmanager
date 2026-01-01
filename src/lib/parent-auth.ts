@@ -32,7 +32,14 @@ export async function getCurrentParent() {
 
   const parent = await prisma.parentAccount.findUnique({
     where: { id: session.parentId },
-    include: {
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      phone: true,
+      emailVerified: true,
+      sessionToken: true,
+      sessionTokenExpiry: true,
       club: {
         select: {
           id: true,
@@ -60,6 +67,20 @@ export async function getCurrentParent() {
       },
     },
   });
+
+  // Validate session token against the database
+  if (!parent) {
+    return null;
+  }
+
+  // Check if session token matches and is not expired
+  if (
+    parent.sessionToken !== session.token ||
+    !parent.sessionTokenExpiry ||
+    new Date(parent.sessionTokenExpiry) < new Date()
+  ) {
+    return null;
+  }
 
   return parent;
 }

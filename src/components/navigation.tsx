@@ -15,6 +15,8 @@ import {
   CalendarDays,
   BarChart3,
   LogOut,
+  FileText,
+  Shield,
 } from "lucide-react";
 
 const navItems = [
@@ -30,6 +32,11 @@ const moreNavItems = [
   { href: "/messages", label: "Messages", icon: Send },
   { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/settings", label: "Settings", icon: Settings },
+];
+
+const legalNavItems = [
+  { href: "/terms", label: "Terms of Service", icon: FileText },
+  { href: "/privacy", label: "Privacy Policy", icon: Shield },
 ];
 
 export function BottomNavigation() {
@@ -127,6 +134,27 @@ export function SideNavigation() {
                     ? "bg-primary/10 text-primary font-semibold"
                     : "text-gray-600 hover:bg-gray-50"
                 )}
+              >
+                <Icon className="w-5 h-5" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="pt-4 border-t border-gray-100">
+          <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+            Legal
+          </p>
+          {legalNavItems.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                target="_blank"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-gray-600 hover:bg-gray-50"
               >
                 <Icon className="w-5 h-5" />
                 <span>{item.label}</span>

@@ -149,6 +149,10 @@ model ParentAccount {
   resetToken       String?
   resetTokenExpiry DateTime?
 
+  // Session management
+  sessionToken       String?
+  sessionTokenExpiry DateTime?
+
   clubId    String
   club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -159,6 +163,7 @@ model ParentAccount {
   @@unique([email, clubId])
   @@index([clubId])
   @@index([email])
+  @@index([sessionToken])
 }
 
 model Subscription {

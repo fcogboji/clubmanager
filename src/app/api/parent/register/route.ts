@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
+import { verifyCsrfToken } from "@/lib/csrf";
+import { sendParentVerificationEmail } from "@/lib/email";
 
 function hashPassword(password: string): string {
   return crypto.createHash("sha256").update(password).digest("hex");
@@ -13,8 +15,17 @@ function generateVerifyToken(): string {
 // Parent registration (invited by club admin)
 export async function POST(request: NextRequest) {
   try {
+    // Verify CSRF token
+    const csrfToken = request.headers.get("x-csrf-token");
+    if (!(await verifyCsrfToken(csrfToken))) {
+      return NextResponse.json(
+        { error: "Invalid or expired security token. Please refresh and try again." },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
-    const { email, password, name, phone, clubSlug, inviteToken } = body;
+    const { email, password, name, phone, clubSlug } = body;
 
     if (!email || !password || !name || !clubSlug) {
       return NextResponse.json(
@@ -92,11 +103,18 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // TODO: Send verification email
+    // Send verification email
+    const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/parent/verify?token=${verifyToken}&club=${clubSlug}`;
+    await sendParentVerificationEmail({
+      to: email,
+      parentName: name,
+      clubName: club.name,
+      verificationUrl,
+    });
 
     return NextResponse.json({
       success: true,
-      message: "Account created successfully",
+      message: "Account created successfully. Please check your email to verify your account.",
       linkedMembers: membersToLink.length,
     });
   } catch (error) {

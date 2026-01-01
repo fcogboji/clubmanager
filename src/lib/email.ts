@@ -1,3 +1,15 @@
+// HTML escaping utility to prevent XSS in email content
+function escapeHtml(text: string): string {
+  const htmlEscapeMap: Record<string, string> = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  };
+  return text.replace(/[&<>"']/g, (char) => htmlEscapeMap[char]);
+}
+
 // Dynamic import to avoid build-time errors when env var is not set
 let resendInstance: unknown = null;
 
@@ -64,6 +76,48 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
   }
 }
 
+interface ParentVerificationEmailParams {
+  to: string;
+  parentName: string;
+  clubName: string;
+  verificationUrl: string;
+}
+
+export async function sendParentVerificationEmail({
+  to,
+  parentName,
+  clubName,
+  verificationUrl,
+}: ParentVerificationEmailParams) {
+  const safeParentName = escapeHtml(parentName);
+  const safeClubName = escapeHtml(clubName);
+  const safeUrl = escapeHtml(verificationUrl);
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2>Verify Your Email - ${safeClubName}</h2>
+      <p>Hi ${safeParentName},</p>
+      <p>Thank you for creating an account with ${safeClubName}. Please verify your email address by clicking the button below:</p>
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${safeUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+          Verify Email Address
+        </a>
+      </div>
+      <p>Or copy and paste this link into your browser:</p>
+      <p style="color: #666; word-break: break-all;">${safeUrl}</p>
+      <p style="color: #888; font-size: 12px; margin-top: 30px;">This link will expire in 24 hours. If you did not create an account, please ignore this email.</p>
+      <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
+      <p style="color: #888; font-size: 12px;">This email was sent by ${safeClubName}.</p>
+    </div>
+  `;
+
+  return sendEmail({
+    to,
+    subject: `Verify your email - ${safeClubName}`,
+    html,
+  });
+}
+
 interface ParentInviteEmailParams {
   to: string;
   parentName: string;
@@ -79,30 +133,35 @@ export async function sendParentInviteEmail({
   memberNames,
   registrationUrl,
 }: ParentInviteEmailParams) {
-  const memberList = memberNames.join(", ");
+  // Escape user-provided content to prevent XSS
+  const safeParentName = escapeHtml(parentName);
+  const safeClubName = escapeHtml(clubName);
+  const safeMemberNames = memberNames.map(escapeHtml);
+  const memberList = safeMemberNames.join(", ");
+  const safeUrl = escapeHtml(registrationUrl);
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2>You're Invited to ${clubName} Parent Portal</h2>
-      <p>Hi ${parentName},</p>
-      <p>You've been invited to create an account on the ${clubName} parent portal to manage your child${memberNames.length > 1 ? "ren" : ""}'s membership.</p>
+      <h2>You're Invited to ${safeClubName} Parent Portal</h2>
+      <p>Hi ${safeParentName},</p>
+      <p>You've been invited to create an account on the ${safeClubName} parent portal to manage your child${memberNames.length > 1 ? "ren" : ""}'s membership.</p>
       <p><strong>Member${memberNames.length > 1 ? "s" : ""}:</strong> ${memberList}</p>
       <p>Click the button below to create your account and set up your subscription:</p>
       <div style="text-align: center; margin: 30px 0;">
-        <a href="${registrationUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+        <a href="${safeUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
           Create Account & Subscribe
         </a>
       </div>
       <p>Or copy and paste this link into your browser:</p>
-      <p style="color: #666; word-break: break-all;">${registrationUrl}</p>
+      <p style="color: #666; word-break: break-all;">${safeUrl}</p>
       <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
-      <p style="color: #888; font-size: 12px;">This email was sent by ${clubName}. If you did not expect this invitation, please ignore this email.</p>
+      <p style="color: #888; font-size: 12px;">This email was sent by ${safeClubName}. If you did not expect this invitation, please ignore this email.</p>
     </div>
   `;
 
   return sendEmail({
     to,
-    subject: `You're invited to ${clubName} Parent Portal`,
+    subject: `You're invited to ${safeClubName} Parent Portal`,
     html,
   });
 }
@@ -122,20 +181,26 @@ export async function sendBroadcastEmail({
   subject,
   content,
 }: BroadcastEmailParams) {
+  // Escape user-provided content to prevent XSS
+  const safeRecipientName = escapeHtml(recipientName);
+  const safeClubName = escapeHtml(clubName);
+  // Escape content, then convert newlines to <br /> for line breaks
+  const safeContent = escapeHtml(content).replace(/\n/g, "<br />");
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <p>Hi ${recipientName},</p>
+      <p>Hi ${safeRecipientName},</p>
       <div style="margin: 20px 0;">
-        ${content.replace(/\n/g, "<br />")}
+        ${safeContent}
       </div>
       <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
-      <p style="color: #888; font-size: 12px;">This email was sent by ${clubName}.</p>
+      <p style="color: #888; font-size: 12px;">This email was sent by ${safeClubName}.</p>
     </div>
   `;
 
   return sendEmail({
     to,
-    subject,
+    subject: escapeHtml(subject),
     html,
   });
 }
@@ -161,6 +226,14 @@ export async function sendPaymentLinkEmail({
   interval,
   paymentUrl,
 }: PaymentLinkEmailParams) {
+  // Escape user-provided content to prevent XSS
+  const safeParentName = escapeHtml(parentName);
+  const safeMemberName = escapeHtml(memberName);
+  const safeClubName = escapeHtml(clubName);
+  const safePlanName = escapeHtml(planName);
+  const safeInterval = escapeHtml(interval);
+  const safeUrl = escapeHtml(paymentUrl);
+
   const formattedAmount = new Intl.NumberFormat("en-GB", {
     style: "currency",
     currency: "GBP",
@@ -170,33 +243,33 @@ export async function sendPaymentLinkEmail({
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #4F46E5;">Payment Required - ${clubName}</h2>
-      <p>Hi ${parentName},</p>
-      <p>Please complete the payment for <strong>${memberName}</strong>'s membership subscription.</p>
+      <h2 style="color: #4F46E5;">Payment Required - ${safeClubName}</h2>
+      <p>Hi ${safeParentName},</p>
+      <p>Please complete the payment for <strong>${safeMemberName}</strong>'s membership subscription.</p>
 
       <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <p style="margin: 0 0 10px 0;"><strong>Plan:</strong> ${planName}</p>
-        <p style="margin: 0 0 10px 0;"><strong>Amount:</strong> ${formattedAmount}/${interval}</p>
+        <p style="margin: 0 0 10px 0;"><strong>Plan:</strong> ${safePlanName}</p>
+        <p style="margin: 0 0 10px 0;"><strong>Amount:</strong> ${formattedAmount}/${safeInterval}</p>
         <p style="margin: 0;"><strong>Payment Type:</strong> ${intervalText.charAt(0).toUpperCase() + intervalText.slice(1)} subscription</p>
       </div>
 
       <div style="text-align: center; margin: 30px 0;">
-        <a href="${paymentUrl}" style="background-color: #4F46E5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+        <a href="${safeUrl}" style="background-color: #4F46E5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
           Complete Payment
         </a>
       </div>
 
       <p>Or copy and paste this link into your browser:</p>
-      <p style="color: #666; word-break: break-all; font-size: 14px;">${paymentUrl}</p>
+      <p style="color: #666; word-break: break-all; font-size: 14px;">${safeUrl}</p>
 
       <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
-      <p style="color: #888; font-size: 12px;">This payment link was sent by ${clubName}. If you have any questions, please contact the club directly.</p>
+      <p style="color: #888; font-size: 12px;">This payment link was sent by ${safeClubName}. If you have any questions, please contact the club directly.</p>
     </div>
   `;
 
   return sendEmail({
     to,
-    subject: `Payment Required: ${memberName}'s ${planName} Subscription - ${clubName}`,
+    subject: `Payment Required: ${safeMemberName}'s ${safePlanName} Subscription - ${safeClubName}`,
     html,
   });
 }

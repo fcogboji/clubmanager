@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import crypto from "crypto";
+import { verifyCsrfToken } from "@/lib/csrf";
 
 // Simple password hashing (in production, use bcrypt)
 function hashPassword(password: string): string {
@@ -19,6 +20,15 @@ function generateToken(): string {
 // Parent login
 export async function POST(request: NextRequest) {
   try {
+    // Verify CSRF token
+    const csrfToken = request.headers.get("x-csrf-token");
+    if (!(await verifyCsrfToken(csrfToken))) {
+      return NextResponse.json(
+        { error: "Invalid or expired security token. Please refresh and try again." },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { email, password, clubSlug } = body;
 
@@ -73,10 +83,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate session token
+    // Generate session token and store in database
     const token = generateToken();
+    const sessionExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-    // Set cookie
+    await prisma.parentAccount.update({
+      where: { id: parent.id },
+      data: {
+        sessionToken: token,
+        sessionTokenExpiry: sessionExpiry,
+      },
+    });
+
+    // Set cookie with session info
     const cookieStore = await cookies();
     cookieStore.set("parent_session", JSON.stringify({
       token,
@@ -112,6 +131,27 @@ export async function POST(request: NextRequest) {
 export async function DELETE() {
   try {
     const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get("parent_session");
+
+    // Invalidate session in database if cookie exists
+    if (sessionCookie?.value) {
+      try {
+        const session = JSON.parse(sessionCookie.value);
+        if (session.parentId) {
+          await prisma.parentAccount.update({
+            where: { id: session.parentId },
+            data: {
+              sessionToken: null,
+              sessionTokenExpiry: null,
+            },
+          });
+        }
+      } catch {
+        // Session parsing failed, just delete the cookie
+      }
+    }
+
+    // Delete the session cookie
     cookieStore.delete("parent_session");
 
     return NextResponse.json({ success: true });
