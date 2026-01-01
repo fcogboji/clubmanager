@@ -379,7 +379,7 @@ function SettingsContent() {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Payment Setup</h2>
               <p className="text-gray-600 mb-6">
                 Connect your Stripe account to receive payments directly from members.
-                We charge a small 2% platform fee on transactions.
+                We charge a 10% platform fee on transactions to cover payment processing and platform services.
               </p>
 
               {stripe?.connected ? (
