@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Users } from "lucide-react";
+import { AuthAwareLink } from "@/components/AuthAwareLink";
 
 export default function MarketingLayout({
   children,
@@ -32,18 +33,18 @@ export default function MarketingLayout({
             </nav>
 
             <div className="flex items-center gap-4">
-              <Link
-                href="/sign-in"
+              <AuthAwareLink
+                signedOutHref="/sign-in"
                 className="text-gray-600 hover:text-gray-900 font-medium"
               >
                 Sign In
-              </Link>
-              <Link
-                href="/sign-up"
+              </AuthAwareLink>
+              <AuthAwareLink
+                signedOutHref="/sign-up"
                 className="gradient-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:opacity-90 transition-opacity"
               >
                 Get Started Free
-              </Link>
+              </AuthAwareLink>
             </div>
           </div>
         </div>
@@ -83,7 +84,7 @@ export default function MarketingLayout({
               <ul className="space-y-2 text-gray-400">
                 <li><Link href="/industries#features" className="hover:text-white">Features</Link></li>
                 <li><Link href="/industries#pricing" className="hover:text-white">Pricing</Link></li>
-                <li><Link href="/sign-up" className="hover:text-white">Get Started</Link></li>
+                <li><AuthAwareLink signedOutHref="/sign-up" className="hover:text-white">Get Started</AuthAwareLink></li>
               </ul>
             </div>
 
@@ -100,12 +101,12 @@ export default function MarketingLayout({
               <p className="text-gray-400 mb-4">
                 Join hundreds of clubs already using Club Manager.
               </p>
-              <Link
-                href="/sign-up"
+              <AuthAwareLink
+                signedOutHref="/sign-up"
                 className="inline-block bg-white text-gray-900 px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors"
               >
                 Start Free Trial
-              </Link>
+              </AuthAwareLink>
             </div>
           </div>
 

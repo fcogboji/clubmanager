@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { Users, Calendar, CreditCard, ArrowRight } from "lucide-react";
+import { AuthAwareLink } from "@/components/AuthAwareLink";
 
 export default async function WelcomePage() {
   const { userId } = await auth();
@@ -56,20 +56,20 @@ export default async function WelcomePage() {
 
         {/* Buttons */}
         <div className="max-w-lg mx-auto w-full space-y-4">
-          <Link
-            href="/sign-up"
+          <AuthAwareLink
+            signedOutHref="/sign-up"
             className="flex items-center justify-center gap-2 w-full bg-white text-primary font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 text-lg"
           >
             Get Started
             <ArrowRight className="w-5 h-5" />
-          </Link>
+          </AuthAwareLink>
 
-          <Link
-            href="/sign-in"
+          <AuthAwareLink
+            signedOutHref="/sign-in"
             className="flex items-center justify-center w-full text-white/90 font-medium py-4 hover:text-white transition-colors"
           >
             Already have an account? Sign In
-          </Link>
+          </AuthAwareLink>
         </div>
       </div>
     </div>

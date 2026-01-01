@@ -45,6 +45,7 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
     "font-src 'self' data:",
     "connect-src 'self' https://*.clerk.accounts.dev https://api.stripe.com https://*.clerk.com wss://*.clerk.accounts.dev",
     "frame-src 'self' https://js.stripe.com https://*.clerk.accounts.dev https://challenges.cloudflare.com",
+    "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
