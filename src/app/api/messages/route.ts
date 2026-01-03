@@ -116,8 +116,8 @@ export async function POST(request: NextRequest) {
         id: true,
         firstName: true,
         lastName: true,
-        parentName: true,
-        parentEmail: true,
+        contactName: true,
+        contactEmail: true,
       },
     });
 
@@ -140,8 +140,8 @@ export async function POST(request: NextRequest) {
         clubId,
         recipients: {
           create: members.map((m) => ({
-            email: m.parentEmail,
-            name: m.parentName || `${m.firstName} ${m.lastName}`,
+            email: m.contactEmail,
+            name: m.contactName || `${m.firstName} ${m.lastName}`,
             status: "sent",
           })),
         },
@@ -158,13 +158,13 @@ export async function POST(request: NextRequest) {
     const emailResults = await Promise.all(
       members.map(async (m) => {
         const result = await sendBroadcastEmail({
-          to: m.parentEmail,
-          recipientName: m.parentName || `${m.firstName} ${m.lastName}`,
+          to: m.contactEmail,
+          recipientName: m.contactName || `${m.firstName} ${m.lastName}`,
           clubName: club.name,
           subject,
           content,
         });
-        return { email: m.parentEmail, ...result };
+        return { email: m.contactEmail, ...result };
       })
     );
 
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
 
     await prisma.emailLog.create({
       data: {
-        to: members.map((m) => m.parentEmail).join(", "),
+        to: members.map((m) => m.contactEmail).join(", "),
         subject,
         type: "broadcast",
         status: failedEmails.length === 0 ? "sent" : "partial",

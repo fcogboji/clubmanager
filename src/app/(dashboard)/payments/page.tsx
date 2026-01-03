@@ -22,7 +22,7 @@ interface Member {
   id: string;
   firstName: string;
   lastName: string;
-  parentEmail: string;
+  contactEmail: string;
   membershipPlan?: {
     id: string;
     name: string;
@@ -204,7 +204,7 @@ function PaymentsContent() {
       const data = await res.json();
       if (data.success) {
         if (data.emailSent) {
-          alert(`Payment link sent to ${member?.parentEmail}`);
+          alert(`Payment link sent to ${member?.contactEmail}`);
         } else {
           // Email was skipped (dev mode) or failed - offer to open the link
           const openLink = confirm(
@@ -337,7 +337,7 @@ function PaymentsContent() {
                         {member.firstName} {member.lastName}
                       </p>
                       <p className="text-sm text-gray-500 mb-2">
-                        {member.parentEmail}
+                        {member.contactEmail}
                       </p>
 
                       {member.membershipPlan && (

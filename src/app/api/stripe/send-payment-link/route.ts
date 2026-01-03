@@ -48,9 +48,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Member not found" }, { status: 404 });
     }
 
-    if (!member.parentEmail) {
+    if (!member.contactEmail) {
       return NextResponse.json(
-        { error: "Member does not have a parent email address" },
+        { error: "Member does not have a contact email address" },
         { status: 400 }
       );
     }
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
         clubId: club.id,
         planId: planId || member.membershipPlanId || "",
       },
-      customer_email: member.parentEmail,
+      customer_email: member.contactEmail,
     };
 
     let session: Stripe.Checkout.Session;
@@ -135,13 +135,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract parent name from email (before @) or use generic greeting
-    const parentName = member.parentEmail.split("@")[0].replace(/[._]/g, " ");
+    // Extract contact name from email (before @) or use generic greeting
+    const contactName = member.contactEmail.split("@")[0].replace(/[._]/g, " ");
 
     // Send the payment link email
     const emailResult = await sendPaymentLinkEmail({
-      to: member.parentEmail,
-      parentName: parentName.charAt(0).toUpperCase() + parentName.slice(1),
+      to: member.contactEmail,
+      contactName: contactName.charAt(0).toUpperCase() + contactName.slice(1),
       memberName: `${member.firstName} ${member.lastName}`,
       clubName: club.name,
       planName,
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
       emailSent: !emailSkipped,
       message: emailSkipped
         ? `Payment link created. Email skipped in dev mode - share the link manually or open it directly.`
-        : `Payment link sent to ${member.parentEmail}`,
+        : `Payment link sent to ${member.contactEmail}`,
       url: session.url,
       sessionId: session.id,
     });

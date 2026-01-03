@@ -69,9 +69,9 @@ export async function POST(request: NextRequest) {
     const clubId = user.clubs[0].id;
     const body = await request.json();
 
-    const { firstName, lastName, parentName, parentEmail, parentPhone, classId, photoUrl } = body;
+    const { firstName, lastName, contactName, contactEmail, contactPhone, classId, photoUrl } = body;
 
-    if (!firstName || !lastName || !parentName || !parentEmail) {
+    if (!firstName || !lastName || !contactName || !contactEmail) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -82,9 +82,9 @@ export async function POST(request: NextRequest) {
       data: {
         firstName,
         lastName,
-        parentName,
-        parentEmail,
-        parentPhone: parentPhone || null,
+        contactName,
+        contactEmail,
+        contactPhone: contactPhone || null,
         photoUrl: photoUrl || null,
         clubId,
         classId: classId || null,

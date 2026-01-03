@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { sendParentInviteEmail } from "@/lib/email";
+import { sendMemberInviteEmail } from "@/lib/email";
 
-// Admin endpoint to invite parents (sends registration link)
+// Admin endpoint to invite members to create portal accounts
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
@@ -36,14 +36,14 @@ export async function POST(request: NextRequest) {
       where: {
         id: { in: memberIds },
         clubId: club.id,
-        parentAccountId: null, // Only members without a parent account
+        memberAccountId: null, // Only members without an account
       },
       select: {
         id: true,
         firstName: true,
         lastName: true,
-        parentEmail: true,
-        parentName: true,
+        contactEmail: true,
+        contactName: true,
       },
     });
 
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     // Group by email to avoid duplicate invites
     const emailGroups = new Map<string, typeof members>();
     members.forEach((m) => {
-      const email = m.parentEmail.toLowerCase();
+      const email = m.contactEmail.toLowerCase();
       const existing = emailGroups.get(email) || [];
       existing.push(m);
       emailGroups.set(email, existing);
@@ -65,28 +65,28 @@ export async function POST(request: NextRequest) {
 
     const invitations: Array<{
       email: string;
-      parentName: string;
+      contactName: string;
       members: string[];
       registrationUrl: string;
     }> = [];
 
     for (const [email, groupMembers] of emailGroups) {
-      // Check if parent account already exists
-      const existingParent = await prisma.parentAccount.findFirst({
+      // Check if account already exists
+      const existingAccount = await prisma.memberAccount.findFirst({
         where: {
           email,
           clubId: club.id,
         },
       });
 
-      if (existingParent) {
+      if (existingAccount) {
         // Link members to existing account
         await prisma.member.updateMany({
           where: {
             id: { in: groupMembers.map((m) => m.id) },
           },
           data: {
-            parentAccountId: existingParent.id,
+            memberAccountId: existingAccount.id,
           },
         });
         continue;
@@ -97,16 +97,16 @@ export async function POST(request: NextRequest) {
 
       invitations.push({
         email,
-        parentName: groupMembers[0].parentName,
+        contactName: groupMembers[0].contactName,
         members: groupMembers.map((m) => `${m.firstName} ${m.lastName}`),
         registrationUrl,
       });
 
       // Send email invitation if sendEmail is true
       if (sendEmail) {
-        const emailResult = await sendParentInviteEmail({
+        const emailResult = await sendMemberInviteEmail({
           to: email,
-          parentName: groupMembers[0].parentName,
+          name: groupMembers[0].contactName,
           clubName: club.name,
           memberNames: groupMembers.map((m) => `${m.firstName} ${m.lastName}`),
           registrationUrl,
@@ -116,8 +116,8 @@ export async function POST(request: NextRequest) {
         await prisma.emailLog.create({
           data: {
             to: email,
-            subject: `You're invited to ${club.name} Parent Portal`,
-            type: "parent_invite",
+            subject: `You're invited to ${club.name} Member Portal`,
+            type: "member_invite",
             status: emailResult.success ? "sent" : "failed",
             error: emailResult.error ? JSON.stringify(emailResult.error) : null,
           },
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
       invitations,
     });
   } catch (error) {
-    console.error("Parent invite error:", error);
+    console.error("Member invite error:", error);
     return NextResponse.json(
       { error: "Failed to send invitations" },
       { status: 500 }

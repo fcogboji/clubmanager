@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
         clubId: club.id,
         planId: planId || member.membershipPlanId || "",
       },
-      customer_email: member.parentEmail,
+      customer_email: member.contactEmail,
     };
 
     // If club has Stripe Connect, use their connected account

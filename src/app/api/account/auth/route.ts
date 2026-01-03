@@ -17,7 +17,7 @@ function generateToken(): string {
   return crypto.randomBytes(32).toString("hex");
 }
 
-// Parent login
+// Member account login
 export async function POST(request: NextRequest) {
   try {
     // Verify CSRF token
@@ -51,8 +51,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find parent account
-    const parent = await prisma.parentAccount.findFirst({
+    // Find member account
+    const account = await prisma.memberAccount.findFirst({
       where: {
         email: email.toLowerCase(),
         clubId: club.id,
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!parent) {
+    if (!account) {
       return NextResponse.json(
         { error: "Invalid email or password" },
         { status: 401 }
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
-    if (!verifyPassword(password, parent.passwordHash)) {
+    if (!verifyPassword(password, account.passwordHash)) {
       return NextResponse.json(
         { error: "Invalid email or password" },
         { status: 401 }
@@ -87,8 +87,8 @@ export async function POST(request: NextRequest) {
     const token = generateToken();
     const sessionExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-    await prisma.parentAccount.update({
-      where: { id: parent.id },
+    await prisma.memberAccount.update({
+      where: { id: account.id },
       data: {
         sessionToken: token,
         sessionTokenExpiry: sessionExpiry,
@@ -97,9 +97,9 @@ export async function POST(request: NextRequest) {
 
     // Set cookie with session info
     const cookieStore = await cookies();
-    cookieStore.set("parent_session", JSON.stringify({
+    cookieStore.set("member_session", JSON.stringify({
       token,
-      parentId: parent.id,
+      accountId: account.id,
       clubId: club.id,
     }), {
       httpOnly: true,
@@ -111,15 +111,15 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      parent: {
-        id: parent.id,
-        name: parent.name,
-        email: parent.email,
-        members: parent.members,
+      account: {
+        id: account.id,
+        name: account.name,
+        email: account.email,
+        members: account.members,
       },
     });
   } catch (error) {
-    console.error("Parent login error:", error);
+    console.error("Account login error:", error);
     return NextResponse.json(
       { error: "Login failed" },
       { status: 500 }
@@ -127,19 +127,19 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Parent logout
+// Member account logout
 export async function DELETE() {
   try {
     const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("parent_session");
+    const sessionCookie = cookieStore.get("member_session");
 
     // Invalidate session in database if cookie exists
     if (sessionCookie?.value) {
       try {
         const session = JSON.parse(sessionCookie.value);
-        if (session.parentId) {
-          await prisma.parentAccount.update({
-            where: { id: session.parentId },
+        if (session.accountId) {
+          await prisma.memberAccount.update({
+            where: { id: session.accountId },
             data: {
               sessionToken: null,
               sessionTokenExpiry: null,
@@ -152,11 +152,11 @@ export async function DELETE() {
     }
 
     // Delete the session cookie
-    cookieStore.delete("parent_session");
+    cookieStore.delete("member_session");
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Parent logout error:", error);
+    console.error("Account logout error:", error);
     return NextResponse.json(
       { error: "Logout failed" },
       { status: 500 }

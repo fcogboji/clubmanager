@@ -49,7 +49,7 @@ model Club {
   membershipPlans MembershipPlan[]
   messages        Message[]
   sessions        Session[]
-  parentAccounts  ParentAccount[]
+  memberAccounts  MemberAccount[]
 
   @@index([ownerId])
   @@index([slug])
@@ -101,10 +101,10 @@ model Member {
   notes       String?
   status      String    @default("active") // active, inactive, lapsed
 
-  // Parent/Guardian info
-  parentName  String
-  parentEmail String
-  parentPhone String?
+  // Contact info (member themselves for adults, or parent/guardian for minors)
+  contactName  String
+  contactEmail String
+  contactPhone String?
 
   // Emergency contact
   emergencyContactName  String?
@@ -115,10 +115,10 @@ model Member {
   club             Club            @relation(fields: [clubId], references: [id], onDelete: Cascade)
   classId          String?
   class            Class?          @relation(fields: [classId], references: [id])
-  membershipPlanId String?
-  membershipPlan   MembershipPlan? @relation(fields: [membershipPlanId], references: [id], onDelete: SetNull)
-  parentAccountId  String?
-  parentAccount    ParentAccount?  @relation(fields: [parentAccountId], references: [id])
+  membershipPlanId  String?
+  membershipPlan    MembershipPlan? @relation(fields: [membershipPlanId], references: [id], onDelete: SetNull)
+  memberAccountId   String?
+  memberAccount     MemberAccount?  @relation(fields: [memberAccountId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -129,12 +129,12 @@ model Member {
   @@index([clubId])
   @@index([classId])
   @@index([status])
-  @@index([parentEmail])
+  @@index([contactEmail])
   @@index([membershipPlanId])
-  @@index([parentAccountId])
+  @@index([memberAccountId])
 }
 
-model ParentAccount {
+model MemberAccount {
   id           String  @id @default(cuid())
   email        String
   passwordHash String

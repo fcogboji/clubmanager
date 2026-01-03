@@ -39,7 +39,7 @@ interface Member {
   }>;
 }
 
-interface ParentProfile {
+interface AccountProfile {
   id: string;
   name: string;
   email: string;
@@ -58,13 +58,13 @@ export default function PortalDashboardPage() {
   const router = useRouter();
   const slug = params.slug as string;
 
-  const [profile, setProfile] = useState<ParentProfile | null>(null);
+  const [profile, setProfile] = useState<AccountProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState<string | null>(null);
 
   const fetchProfile = useCallback(async () => {
     try {
-      const res = await fetch("/api/parent/profile");
+      const res = await fetch("/api/account/profile");
       if (res.ok) {
         const data = await res.json();
         setProfile(data);
@@ -89,7 +89,7 @@ export default function PortalDashboardPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/parent/auth", { method: "DELETE" });
+      await fetch("/api/account/auth", { method: "DELETE" });
       router.push(`/portal/${slug}`);
     } catch (error) {
       console.error("Logout failed:", error);
@@ -129,7 +129,7 @@ export default function PortalDashboardPage() {
               )}
               <div>
                 <h1 className="text-xl font-bold text-white">{profile.club.name}</h1>
-                <p className="text-white/80 text-sm">Parent Portal</p>
+                <p className="text-white/80 text-sm">Member Portal</p>
               </div>
             </div>
             <button
@@ -148,7 +148,7 @@ export default function PortalDashboardPage() {
         {/* Member Selector (if multiple) */}
         {profile.members.length > 1 && (
           <div className="mb-6">
-            <p className="text-sm font-medium text-gray-500 mb-2">Select Child</p>
+            <p className="text-sm font-medium text-gray-500 mb-2">Select Member</p>
             <div className="flex gap-2 overflow-x-auto pb-2">
               {profile.members.map((member) => (
                 <button
@@ -304,7 +304,7 @@ export default function PortalDashboardPage() {
             <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600">No members linked to your account yet</p>
             <p className="text-sm text-gray-500">
-              Contact the club to link your children to your account
+              Contact the club to link members to your account
             </p>
           </Card>
         )}

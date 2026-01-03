@@ -1,37 +1,37 @@
 import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 
-interface ParentSession {
+interface MemberSession {
   token: string;
-  parentId: string;
+  accountId: string;
   clubId: string;
 }
 
-export async function getParentSession(): Promise<ParentSession | null> {
+export async function getMemberSession(): Promise<MemberSession | null> {
   try {
     const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("parent_session");
+    const sessionCookie = cookieStore.get("member_session");
 
     if (!sessionCookie?.value) {
       return null;
     }
 
-    const session = JSON.parse(sessionCookie.value) as ParentSession;
+    const session = JSON.parse(sessionCookie.value) as MemberSession;
     return session;
   } catch {
     return null;
   }
 }
 
-export async function getCurrentParent() {
-  const session = await getParentSession();
+export async function getCurrentAccount() {
+  const session = await getMemberSession();
 
   if (!session) {
     return null;
   }
 
-  const parent = await prisma.parentAccount.findUnique({
-    where: { id: session.parentId },
+  const account = await prisma.memberAccount.findUnique({
+    where: { id: session.accountId },
     select: {
       id: true,
       email: true,
@@ -69,28 +69,28 @@ export async function getCurrentParent() {
   });
 
   // Validate session token against the database
-  if (!parent) {
+  if (!account) {
     return null;
   }
 
   // Check if session token matches and is not expired
   if (
-    parent.sessionToken !== session.token ||
-    !parent.sessionTokenExpiry ||
-    new Date(parent.sessionTokenExpiry) < new Date()
+    account.sessionToken !== session.token ||
+    !account.sessionTokenExpiry ||
+    new Date(account.sessionTokenExpiry) < new Date()
   ) {
     return null;
   }
 
-  return parent;
+  return account;
 }
 
-export async function requireParentAuth() {
-  const parent = await getCurrentParent();
+export async function requireMemberAuth() {
+  const account = await getCurrentAccount();
 
-  if (!parent) {
+  if (!account) {
     throw new Error("Unauthorized");
   }
 
-  return parent;
+  return account;
 }

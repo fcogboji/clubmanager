@@ -1,6 +1,8 @@
 # Club Manager
 
-A comprehensive web application for managing clubs, members, classes, attendance, payments, and parent communications. Built with Next.js 15, TypeScript, Prisma, and Tailwind CSS.
+A comprehensive web application for managing clubs, members, classes, attendance, payments, and communications. Built with Next.js 15, TypeScript, Prisma, and Tailwind CSS.
+
+**Designed for all types of organizations** - dance studios, churches, sports clubs, hobby groups, and more. Uses neutral "Contact" terminology that works for both youth organizations (where contacts are parents/guardians) and adult organizations (where contacts are the members themselves).
 
 ## Features
 
@@ -10,13 +12,13 @@ A comprehensive web application for managing clubs, members, classes, attendance
 - **Class Management** - Create and organize classes with schedules
 - **Attendance Tracking** - Record and monitor member attendance
 - **Payment Processing** - Stripe integration for subscription billing
-- **Messaging** - Send broadcast emails to members and parents
+- **Messaging** - Send broadcast emails to members and contacts
 - **Reports** - View attendance and payment reports
 - **Schedule** - Calendar view of upcoming sessions
 
-### For Parents (Portal)
-- **Parent Portal** - Dedicated login for parents to manage their children's memberships
-- **View Children** - See linked children and their class assignments
+### For Members (Portal)
+- **Member Portal** - Dedicated login for members/contacts to manage memberships
+- **View Members** - See linked members and their class assignments
 - **Subscription Status** - View payment status and upcoming renewals
 - **Attendance History** - Track recent attendance records
 
@@ -25,7 +27,7 @@ A comprehensive web application for managing clubs, members, classes, attendance
 - **CSRF Protection** - Token-based protection for form submissions
 - **Security Headers** - CSP, X-Frame-Options, HSTS, and more
 - **Session Management** - Server-side session validation with token expiry
-- **Email Verification** - Verification emails for parent accounts
+- **Email Verification** - Verification emails for member accounts
 - **HTML Escaping** - XSS prevention in email content
 
 ## Tech Stack
@@ -132,13 +134,13 @@ src/
 │   ├── (dashboard)/       # Main dashboard pages
 │   ├── (marketing)/       # Public marketing pages
 │   ├── api/               # API routes
-│   └── portal/            # Parent portal pages
+│   └── portal/            # Member portal pages
 ├── components/            # React components
 │   └── ui/               # Reusable UI components
 ├── lib/                   # Utility functions and configurations
 │   ├── csrf.ts           # CSRF token utilities
 │   ├── email.ts          # Email sending functions
-│   ├── parent-auth.ts    # Parent authentication helpers
+│   ├── member-auth.ts    # Member portal authentication helpers
 │   ├── prisma.ts         # Prisma client instance
 │   └── utils.ts          # General utilities
 └── test/                  # Test setup and utilities
@@ -169,12 +171,12 @@ src/
 | `/admin/revenue` | Revenue analytics |
 | `/admin/activity` | Activity logs |
 
-### Parent Portal Routes
+### Member Portal Routes
 | Route | Description |
 |-------|-------------|
 | `/portal/[slug]` | Club-specific login |
-| `/portal/[slug]/register` | Parent registration |
-| `/portal/[slug]/dashboard` | Parent dashboard |
+| `/portal/[slug]/register` | Member account registration |
+| `/portal/[slug]/dashboard` | Member dashboard |
 
 ### Public Routes
 | Route | Description |
@@ -213,15 +215,15 @@ src/
 - `POST /api/stripe/send-payment-link` - Send payment link email
 - `POST /api/webhooks/stripe` - Stripe webhook handler
 
-### Parent Portal
-- `POST /api/parent/auth` - Parent login
-- `DELETE /api/parent/auth` - Parent logout
-- `POST /api/parent/register` - Parent registration
-- `GET /api/parent/profile` - Get parent profile
-- `PATCH /api/parent/profile` - Update parent profile
-- `POST /api/parent/invite` - Invite parents
-- `GET /api/parent/verify` - Verify email
-- `POST /api/parent/verify` - Resend verification
+### Member Portal (Account)
+- `POST /api/account/auth` - Member login
+- `DELETE /api/account/auth` - Member logout
+- `POST /api/account/register` - Member registration
+- `GET /api/account/profile` - Get member profile
+- `PATCH /api/account/profile` - Update member profile
+- `POST /api/account/invite` - Invite members to portal
+- `GET /api/account/verify` - Verify email
+- `POST /api/account/verify` - Resend verification
 
 ### Other
 - `GET /api/csrf` - Get CSRF token
@@ -234,8 +236,11 @@ Key models in the database:
 
 - **User** - Admin users (Clerk-authenticated)
 - **Club** - Club organizations
-- **Member** - Club members (children)
-- **ParentAccount** - Parent portal accounts
+- **Member** - Club members with contact information
+  - `contactName` - Name of the contact person (member themselves for adults, parent/guardian for minors)
+  - `contactEmail` - Email for communications and portal login
+  - `contactPhone` - Phone number (optional)
+- **MemberAccount** - Member portal accounts (for self-service access)
 - **Class** - Classes/groups
 - **Session** - Scheduled sessions
 - **Attendance** - Attendance records
@@ -250,7 +255,7 @@ Key models in the database:
 
 1. **Authentication**
    - Clerk for admin authentication
-   - Custom session tokens for parent portal
+   - Custom session tokens for member portal
    - Session validation on each request
 
 2. **CSRF Protection**

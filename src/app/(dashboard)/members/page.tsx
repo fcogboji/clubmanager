@@ -30,8 +30,8 @@ interface Member {
   firstName: string;
   lastName: string;
   photoUrl?: string;
-  parentName: string;
-  parentEmail: string;
+  contactName: string;
+  contactEmail: string;
   status: string;
   class?: { id: string; name: string };
   membershipPlan?: { id: string; name: string };
@@ -81,9 +81,9 @@ function MembersContent() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    parentName: "",
-    parentEmail: "",
-    parentPhone: "",
+    contactName: "",
+    contactEmail: "",
+    contactPhone: "",
     classId: "",
     membershipPlanId: "",
     notes: "",
@@ -129,8 +129,8 @@ function MembersContent() {
       !searchQuery ||
       member.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.parentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.parentEmail.toLowerCase().includes(searchQuery.toLowerCase());
+      member.contactName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.contactEmail.toLowerCase().includes(searchQuery.toLowerCase());
 
     // Status filter
     const matchesStatus = !filters.status || member.status === filters.status;
@@ -168,9 +168,9 @@ function MembersContent() {
         setFormData({
           firstName: "",
           lastName: "",
-          parentName: "",
-          parentEmail: "",
-          parentPhone: "",
+          contactName: "",
+          contactEmail: "",
+          contactPhone: "",
           classId: "",
           membershipPlanId: "",
           notes: "",
@@ -216,9 +216,9 @@ function MembersContent() {
       const fieldMappings: Record<string, string[]> = {
         firstName: ["first name", "firstname", "first", "given name"],
         lastName: ["last name", "lastname", "surname", "family name"],
-        parentName: ["parent name", "parentname", "guardian", "guardian name"],
-        parentEmail: ["parent email", "parentemail", "email", "guardian email"],
-        parentPhone: ["phone", "telephone", "mobile", "parent phone"],
+        contactName: ["contact name", "contactname", "parent name", "parentname", "guardian", "guardian name"],
+        contactEmail: ["contact email", "contactemail", "parent email", "parentemail", "email", "guardian email"],
+        contactPhone: ["phone", "telephone", "mobile", "contact phone", "parent phone"],
         className: ["class", "group", "team", "class name"],
         dateOfBirth: ["dob", "date of birth", "birthday", "birth date"],
         notes: ["notes", "comments", "remarks"],
@@ -250,9 +250,9 @@ function MembersContent() {
       const members = csvData.map((row) => ({
         firstName: row[columnMapping.firstName] || "",
         lastName: row[columnMapping.lastName] || "",
-        parentName: row[columnMapping.parentName] || "",
-        parentEmail: row[columnMapping.parentEmail] || "",
-        parentPhone: row[columnMapping.parentPhone] || "",
+        contactName: row[columnMapping.contactName] || "",
+        contactEmail: row[columnMapping.contactEmail] || "",
+        contactPhone: row[columnMapping.contactPhone] || "",
         className: row[columnMapping.className] || "",
         dateOfBirth: row[columnMapping.dateOfBirth] || "",
         notes: row[columnMapping.notes] || "",
@@ -325,7 +325,7 @@ function MembersContent() {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Upload CSV File</h2>
               <p className="text-gray-600 mb-6">
                 Upload a CSV or Excel file with your member data. The file should include columns for
-                first name, last name, parent name, and parent email.
+                first name, last name, contact name, and contact email.
               </p>
 
               <div
@@ -350,9 +350,9 @@ function MembersContent() {
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>• First Name (required)</li>
                   <li>• Last Name (required)</li>
-                  <li>• Parent/Guardian Name (required)</li>
-                  <li>• Parent Email (required)</li>
-                  <li>• Parent Phone (optional)</li>
+                  <li>• Contact Name (required)</li>
+                  <li>• Contact Email (required)</li>
+                  <li>• Contact Phone (optional)</li>
                   <li>• Class/Team Name (optional)</li>
                 </ul>
               </div>
@@ -368,13 +368,13 @@ function MembersContent() {
               </p>
 
               <div className="space-y-4">
-                {["firstName", "lastName", "parentName", "parentEmail", "parentPhone", "className"].map((field) => {
+                {["firstName", "lastName", "contactName", "contactEmail", "contactPhone", "className"].map((field) => {
                   const labels: Record<string, string> = {
                     firstName: "First Name *",
                     lastName: "Last Name *",
-                    parentName: "Parent Name *",
-                    parentEmail: "Parent Email *",
-                    parentPhone: "Parent Phone",
+                    contactName: "Contact Name *",
+                    contactEmail: "Contact Email *",
+                    contactPhone: "Contact Phone",
                     className: "Class/Team Name",
                   };
 
@@ -433,7 +433,7 @@ function MembersContent() {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-2 text-left">Name</th>
-                        <th className="px-4 py-2 text-left">Parent</th>
+                        <th className="px-4 py-2 text-left">Contact</th>
                         <th className="px-4 py-2 text-left">Email</th>
                         <th className="px-4 py-2 text-left">Class</th>
                       </tr>
@@ -444,8 +444,8 @@ function MembersContent() {
                           <td className="px-4 py-2">
                             {row[columnMapping.firstName]} {row[columnMapping.lastName]}
                           </td>
-                          <td className="px-4 py-2">{row[columnMapping.parentName]}</td>
-                          <td className="px-4 py-2">{row[columnMapping.parentEmail]}</td>
+                          <td className="px-4 py-2">{row[columnMapping.contactName]}</td>
+                          <td className="px-4 py-2">{row[columnMapping.contactEmail]}</td>
                           <td className="px-4 py-2">{row[columnMapping.className] || "-"}</td>
                         </tr>
                       ))}
@@ -510,27 +510,27 @@ function MembersContent() {
             </div>
 
             <Input
-              label="Parent/Guardian Name *"
-              value={formData.parentName}
-              onChange={(e) => setFormData({ ...formData, parentName: e.target.value })}
-              placeholder="Enter parent name"
+              label="Contact Name *"
+              value={formData.contactName}
+              onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
+              placeholder="Enter contact name"
               required
             />
 
             <div className="grid grid-cols-2 gap-4">
               <Input
-                label="Parent Email *"
+                label="Contact Email *"
                 type="email"
-                value={formData.parentEmail}
-                onChange={(e) => setFormData({ ...formData, parentEmail: e.target.value })}
-                placeholder="parent@example.com"
+                value={formData.contactEmail}
+                onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                placeholder="contact@example.com"
                 required
               />
               <Input
-                label="Parent Phone"
+                label="Contact Phone"
                 type="tel"
-                value={formData.parentPhone}
-                onChange={(e) => setFormData({ ...formData, parentPhone: e.target.value })}
+                value={formData.contactPhone}
+                onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
                 placeholder="Enter phone number"
               />
             </div>
@@ -773,7 +773,7 @@ function MembersContent() {
                       </div>
                       <div className="flex items-center gap-1 text-xs text-gray-500">
                         <User className="w-3 h-3" />
-                        <span className="truncate">{member.parentName}</span>
+                        <span className="truncate">{member.contactName}</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2">

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { verifyCsrfToken } from "@/lib/csrf";
-import { sendParentVerificationEmail } from "@/lib/email";
+import { sendVerificationEmail } from "@/lib/email";
 
 function hashPassword(password: string): string {
   return crypto.createHash("sha256").update(password).digest("hex");
@@ -12,7 +12,7 @@ function generateVerifyToken(): string {
   return crypto.randomBytes(16).toString("hex");
 }
 
-// Parent registration (invited by club admin)
+// Member account registration
 export async function POST(request: NextRequest) {
   try {
     // Verify CSRF token
@@ -53,34 +53,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if parent already exists for this club
-    const existingParent = await prisma.parentAccount.findFirst({
+    // Check if account already exists for this club
+    const existingAccount = await prisma.memberAccount.findFirst({
       where: {
         email: email.toLowerCase(),
         clubId: club.id,
       },
     });
 
-    if (existingParent) {
+    if (existingAccount) {
       return NextResponse.json(
         { error: "An account with this email already exists" },
         { status: 409 }
       );
     }
 
-    // Find members with this parent email to link
+    // Find members with this contact email to link
     const membersToLink = await prisma.member.findMany({
       where: {
         clubId: club.id,
-        parentEmail: email.toLowerCase(),
-        parentAccountId: null,
+        contactEmail: email.toLowerCase(),
+        memberAccountId: null,
       },
       select: { id: true },
     });
 
-    // Create parent account
+    // Create member account
     const verifyToken = generateVerifyToken();
-    const parent = await prisma.parentAccount.create({
+    const account = await prisma.memberAccount.create({
       data: {
         email: email.toLowerCase(),
         passwordHash: hashPassword(password),
@@ -91,23 +91,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Link existing members to this parent account
+    // Link existing members to this account
     if (membersToLink.length > 0) {
       await prisma.member.updateMany({
         where: {
           id: { in: membersToLink.map((m) => m.id) },
         },
         data: {
-          parentAccountId: parent.id,
+          memberAccountId: account.id,
         },
       });
     }
 
     // Send verification email
-    const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/parent/verify?token=${verifyToken}&club=${clubSlug}`;
-    await sendParentVerificationEmail({
+    const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/account/verify?token=${verifyToken}&club=${clubSlug}`;
+    await sendVerificationEmail({
       to: email,
-      parentName: name,
+      name: name,
       clubName: club.name,
       verificationUrl,
     });
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
       linkedMembers: membersToLink.length,
     });
   } catch (error) {
-    console.error("Parent registration error:", error);
+    console.error("Account registration error:", error);
     return NextResponse.json(
       { error: "Registration failed" },
       { status: 500 }

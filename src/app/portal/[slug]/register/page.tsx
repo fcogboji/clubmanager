@@ -42,7 +42,7 @@ export default function PortalRegisterPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/parent/register", {
+      const res = await fetch("/api/account/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -76,7 +76,7 @@ export default function PortalRegisterPage() {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Registration Successful!</h1>
           <p className="text-gray-600 mb-6">
-            Your account has been created. You can now sign in to access the parent portal.
+            Your account has been created. You can now sign in to access the member portal.
           </p>
           <Button onClick={() => router.push(`/portal/${slug}`)}>
             Go to Login
@@ -95,7 +95,7 @@ export default function PortalRegisterPage() {
             <Users className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
-          <p className="text-gray-600 mt-1">Register to access the parent portal</p>
+          <p className="text-gray-600 mt-1">Register to access the member portal</p>
         </div>
 
         <Card>

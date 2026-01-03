@@ -24,7 +24,7 @@ export default function PortalLoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/parent/auth", {
+      const res = await fetch("/api/account/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, clubSlug: slug }),
@@ -51,8 +51,8 @@ export default function PortalLoginPage() {
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl gradient-primary flex items-center justify-center">
             <Users className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Parent Portal</h1>
-          <p className="text-gray-600 mt-1">Sign in to view your children&apos;s information</p>
+          <h1 className="text-2xl font-bold text-gray-900">Member Portal</h1>
+          <p className="text-gray-600 mt-1">Sign in to view your membership information</p>
         </div>
 
         <Card>

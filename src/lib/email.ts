@@ -76,27 +76,27 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
   }
 }
 
-interface ParentVerificationEmailParams {
+interface VerificationEmailParams {
   to: string;
-  parentName: string;
+  name: string;
   clubName: string;
   verificationUrl: string;
 }
 
-export async function sendParentVerificationEmail({
+export async function sendVerificationEmail({
   to,
-  parentName,
+  name,
   clubName,
   verificationUrl,
-}: ParentVerificationEmailParams) {
-  const safeParentName = escapeHtml(parentName);
+}: VerificationEmailParams) {
+  const safeName = escapeHtml(name);
   const safeClubName = escapeHtml(clubName);
   const safeUrl = escapeHtml(verificationUrl);
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2>Verify Your Email - ${safeClubName}</h2>
-      <p>Hi ${safeParentName},</p>
+      <p>Hi ${safeName},</p>
       <p>Thank you for creating an account with ${safeClubName}. Please verify your email address by clicking the button below:</p>
       <div style="text-align: center; margin: 30px 0;">
         <a href="${safeUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
@@ -118,23 +118,23 @@ export async function sendParentVerificationEmail({
   });
 }
 
-interface ParentInviteEmailParams {
+interface MemberInviteEmailParams {
   to: string;
-  parentName: string;
+  name: string;
   clubName: string;
   memberNames: string[];
   registrationUrl: string;
 }
 
-export async function sendParentInviteEmail({
+export async function sendMemberInviteEmail({
   to,
-  parentName,
+  name,
   clubName,
   memberNames,
   registrationUrl,
-}: ParentInviteEmailParams) {
+}: MemberInviteEmailParams) {
   // Escape user-provided content to prevent XSS
-  const safeParentName = escapeHtml(parentName);
+  const safeName = escapeHtml(name);
   const safeClubName = escapeHtml(clubName);
   const safeMemberNames = memberNames.map(escapeHtml);
   const memberList = safeMemberNames.join(", ");
@@ -142,9 +142,9 @@ export async function sendParentInviteEmail({
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2>You're Invited to ${safeClubName} Parent Portal</h2>
-      <p>Hi ${safeParentName},</p>
-      <p>You've been invited to create an account on the ${safeClubName} parent portal to manage your child${memberNames.length > 1 ? "ren" : ""}'s membership.</p>
+      <h2>You're Invited to ${safeClubName} Member Portal</h2>
+      <p>Hi ${safeName},</p>
+      <p>You've been invited to create an account on the ${safeClubName} member portal to manage membership${memberNames.length > 1 ? "s" : ""}.</p>
       <p><strong>Member${memberNames.length > 1 ? "s" : ""}:</strong> ${memberList}</p>
       <p>Click the button below to create your account and set up your subscription:</p>
       <div style="text-align: center; margin: 30px 0;">
@@ -161,7 +161,7 @@ export async function sendParentInviteEmail({
 
   return sendEmail({
     to,
-    subject: `You're invited to ${safeClubName} Parent Portal`,
+    subject: `You're invited to ${safeClubName} Member Portal`,
     html,
   });
 }
@@ -207,7 +207,7 @@ export async function sendBroadcastEmail({
 
 interface PaymentLinkEmailParams {
   to: string;
-  parentName: string;
+  contactName: string;
   memberName: string;
   clubName: string;
   planName: string;
@@ -218,7 +218,7 @@ interface PaymentLinkEmailParams {
 
 export async function sendPaymentLinkEmail({
   to,
-  parentName,
+  contactName,
   memberName,
   clubName,
   planName,
@@ -227,7 +227,7 @@ export async function sendPaymentLinkEmail({
   paymentUrl,
 }: PaymentLinkEmailParams) {
   // Escape user-provided content to prevent XSS
-  const safeParentName = escapeHtml(parentName);
+  const safeContactName = escapeHtml(contactName);
   const safeMemberName = escapeHtml(memberName);
   const safeClubName = escapeHtml(clubName);
   const safePlanName = escapeHtml(planName);
@@ -244,7 +244,7 @@ export async function sendPaymentLinkEmail({
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #4F46E5;">Payment Required - ${safeClubName}</h2>
-      <p>Hi ${safeParentName},</p>
+      <p>Hi ${safeContactName},</p>
       <p>Please complete the payment for <strong>${safeMemberName}</strong>'s membership subscription.</p>
 
       <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">

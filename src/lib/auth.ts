@@ -100,20 +100,37 @@ export async function ensureUserWithClub() {
       counter++;
     }
 
-    user = await prisma.user.create({
-      data: {
-        clerkId: userId,
-        email,
-        name: name || null,
-        clubs: {
-          create: {
-            name: "My Club",
-            slug,
+    try {
+      user = await prisma.user.create({
+        data: {
+          clerkId: userId,
+          email,
+          name: name || null,
+          clubs: {
+            create: {
+              name: "My Club",
+              slug,
+            },
           },
         },
-      },
-      include: { clubs: true },
-    });
+        include: { clubs: true },
+      });
+    } catch (error) {
+      // Handle race condition: if another request already created the user,
+      // fetch the existing user instead
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        (error as { code: string }).code === "P2002"
+      ) {
+        user = await prisma.user.findUnique({
+          where: { clerkId: userId },
+          include: { clubs: true },
+        });
+      } else {
+        throw error;
+      }
+    }
   } else if (!user.clubs.length) {
     // User exists but has no club - create one
     const slug = `club-${user.id.slice(0, 8)}`;

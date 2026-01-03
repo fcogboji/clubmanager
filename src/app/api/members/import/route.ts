@@ -5,9 +5,9 @@ import { prisma } from "@/lib/prisma";
 interface ImportedMember {
   firstName: string;
   lastName: string;
-  parentName: string;
-  parentEmail: string;
-  parentPhone?: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone?: string;
   dateOfBirth?: string;
   notes?: string;
   className?: string;
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     for (const member of members) {
       try {
         // Validate required fields
-        if (!member.firstName || !member.lastName || !member.parentName || !member.parentEmail) {
+        if (!member.firstName || !member.lastName || !member.contactName || !member.contactEmail) {
           results.skipped++;
           results.errors.push(
             `Skipped: Missing required fields for ${member.firstName || "unknown"} ${member.lastName || "unknown"}`
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
         const existing = await prisma.member.findFirst({
           where: {
             clubId,
-            parentEmail: member.parentEmail,
+            contactEmail: member.contactEmail,
             firstName: member.firstName,
             lastName: member.lastName,
           },
@@ -119,9 +119,9 @@ export async function POST(request: NextRequest) {
           data: {
             firstName: member.firstName.trim(),
             lastName: member.lastName.trim(),
-            parentName: member.parentName.trim(),
-            parentEmail: member.parentEmail.trim().toLowerCase(),
-            parentPhone: member.parentPhone?.trim() || null,
+            contactName: member.contactName.trim(),
+            contactEmail: member.contactEmail.trim().toLowerCase(),
+            contactPhone: member.contactPhone?.trim() || null,
             dateOfBirth,
             notes: member.notes?.trim() || null,
             emergencyContactName: member.emergencyContactName?.trim() || null,

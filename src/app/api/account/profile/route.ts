@@ -1,24 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentParent } from "@/lib/parent-auth";
+import { getCurrentAccount } from "@/lib/member-auth";
 
-// Get parent profile with linked members
+// Get account profile with linked members
 export async function GET() {
   try {
-    const parent = await getCurrentParent();
+    const account = await getCurrentAccount();
 
-    if (!parent) {
+    if (!account) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     return NextResponse.json({
-      id: parent.id,
-      name: parent.name,
-      email: parent.email,
-      phone: parent.phone,
-      emailVerified: parent.emailVerified,
-      club: parent.club,
-      members: parent.members.map((m) => ({
+      id: account.id,
+      name: account.name,
+      email: account.email,
+      phone: account.phone,
+      emailVerified: account.emailVerified,
+      club: account.club,
+      members: account.members.map((m) => ({
         id: m.id,
         firstName: m.firstName,
         lastName: m.lastName,
@@ -40,7 +40,7 @@ export async function GET() {
       })),
     });
   } catch (error) {
-    console.error("Get parent profile error:", error);
+    console.error("Get account profile error:", error);
     return NextResponse.json(
       { error: "Failed to get profile" },
       { status: 500 }
@@ -48,20 +48,20 @@ export async function GET() {
   }
 }
 
-// Update parent profile
+// Update account profile
 export async function PATCH(request: NextRequest) {
   try {
-    const parent = await getCurrentParent();
+    const account = await getCurrentAccount();
 
-    if (!parent) {
+    if (!account) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
     const { name, phone } = body;
 
-    const updated = await prisma.parentAccount.update({
-      where: { id: parent.id },
+    const updated = await prisma.memberAccount.update({
+      where: { id: account.id },
       data: {
         ...(name !== undefined && { name }),
         ...(phone !== undefined && { phone }),
@@ -75,7 +75,7 @@ export async function PATCH(request: NextRequest) {
       phone: updated.phone,
     });
   } catch (error) {
-    console.error("Update parent profile error:", error);
+    console.error("Update account profile error:", error);
     return NextResponse.json(
       { error: "Failed to update profile" },
       { status: 500 }

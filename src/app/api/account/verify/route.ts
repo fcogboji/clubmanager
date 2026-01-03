@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// Verify parent email
+// Verify member email
 export async function GET(request: NextRequest) {
   try {
     const token = request.nextUrl.searchParams.get("token");
@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Find parent with matching verify token
-    const parent = await prisma.parentAccount.findFirst({
+    // Find account with matching verify token
+    const account = await prisma.memberAccount.findFirst({
       where: {
         verifyToken: token,
         clubId: club.id,
@@ -33,15 +33,15 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    if (!parent) {
+    if (!account) {
       return NextResponse.redirect(
         new URL(`/portal/${clubSlug}?error=invalid_or_expired_token`, request.url)
       );
     }
 
     // Mark email as verified and clear the token
-    await prisma.parentAccount.update({
-      where: { id: parent.id },
+    await prisma.memberAccount.update({
+      where: { id: account.id },
       data: {
         emailVerified: true,
         verifyToken: null,
@@ -85,15 +85,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find parent account
-    const parent = await prisma.parentAccount.findFirst({
+    // Find member account
+    const account = await prisma.memberAccount.findFirst({
       where: {
         email: email.toLowerCase(),
         clubId: club.id,
       },
     });
 
-    if (!parent) {
+    if (!account) {
       // Don't reveal if account exists
       return NextResponse.json({
         success: true,
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    if (parent.emailVerified) {
+    if (account.emailVerified) {
       return NextResponse.json({
         success: true,
         message: "Email is already verified.",
@@ -112,18 +112,18 @@ export async function POST(request: NextRequest) {
     const crypto = await import("crypto");
     const verifyToken = crypto.randomBytes(32).toString("hex");
 
-    await prisma.parentAccount.update({
-      where: { id: parent.id },
+    await prisma.memberAccount.update({
+      where: { id: account.id },
       data: { verifyToken },
     });
 
     // Send verification email
-    const { sendParentVerificationEmail } = await import("@/lib/email");
-    const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/parent/verify?token=${verifyToken}&club=${clubSlug}`;
+    const { sendVerificationEmail } = await import("@/lib/email");
+    const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/account/verify?token=${verifyToken}&club=${clubSlug}`;
 
-    await sendParentVerificationEmail({
-      to: parent.email,
-      parentName: parent.name,
+    await sendVerificationEmail({
+      to: account.email,
+      name: account.name,
       clubName: club.name,
       verificationUrl,
     });
