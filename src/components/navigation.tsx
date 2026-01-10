@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SignOutButton } from "@clerk/nextjs";
@@ -17,6 +18,7 @@ import {
   LogOut,
   FileText,
   Shield,
+  ShieldCheck,
 } from "lucide-react";
 
 const navItems = [
@@ -77,6 +79,14 @@ export function BottomNavigation() {
 
 export function SideNavigation() {
   const pathname = usePathname();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/admin-check")
+      .then((res) => res.json())
+      .then((data) => setIsAdmin(data.isAdmin))
+      .catch(() => setIsAdmin(false));
+  }, []);
 
   return (
     <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-gray-100 flex-col z-50">
@@ -162,6 +172,26 @@ export function SideNavigation() {
             );
           })}
         </div>
+
+        {isAdmin && (
+          <div className="pt-4 border-t border-gray-100">
+            <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              Admin
+            </p>
+            <Link
+              href="/admin"
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
+                pathname.startsWith("/admin")
+                  ? "bg-orange-100 text-orange-600 font-semibold"
+                  : "text-gray-600 hover:bg-orange-50 hover:text-orange-600"
+              )}
+            >
+              <ShieldCheck className="w-5 h-5" />
+              <span>Admin Panel</span>
+            </Link>
+          </div>
+        )}
       </nav>
 
       {/* Logout Button */}

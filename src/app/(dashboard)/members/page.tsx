@@ -127,10 +127,10 @@ function MembersContent() {
     // Text search
     const matchesSearch =
       !searchQuery ||
-      member.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.contactName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.contactEmail.toLowerCase().includes(searchQuery.toLowerCase());
+      (member.firstName ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (member.lastName ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (member.contactName ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (member.contactEmail ?? '').toLowerCase().includes(searchQuery.toLowerCase());
 
     // Status filter
     const matchesStatus = !filters.status || member.status === filters.status;
@@ -637,7 +637,7 @@ function MembersContent() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search members..."
+              placeholder="Search by name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-13 pl-12 pr-4 bg-white rounded-2xl text-gray-900 placeholder-gray-400 shadow-lg focus:outline-none focus:ring-2 focus:ring-white/50"
