@@ -19,6 +19,8 @@ import {
   FileText,
   Shield,
   ShieldCheck,
+  Menu,
+  X,
 } from "lucide-react";
 
 const navItems = [
@@ -41,11 +43,206 @@ const legalNavItems = [
   { href: "/privacy", label: "Privacy Policy", icon: Shield },
 ];
 
+export function MobileHeader() {
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/admin-check")
+      .then((res) => res.json())
+      .then((data) => setIsAdmin(data.isAdmin))
+      .catch(() => setIsAdmin(false));
+  }, []);
+
+  // Close menu when route changes
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
+  // Prevent body scroll when menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  return (
+    <>
+      {/* Mobile Header Bar */}
+      <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-100 px-4 flex items-center justify-between z-50 md:hidden">
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center">
+            <Users className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-lg font-bold text-gray-900">Club Manager</span>
+        </Link>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors"
+          aria-label={isOpen ? "Close menu" : "Open menu"}
+        >
+          {isOpen ? (
+            <X className="w-6 h-6 text-gray-700" />
+          ) : (
+            <Menu className="w-6 h-6 text-gray-700" />
+          )}
+        </button>
+      </header>
+
+      {/* Mobile Menu Overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Mobile Menu Drawer */}
+      <aside
+        className={cn(
+          "fixed top-0 right-0 bottom-0 w-72 bg-white z-50 transform transition-transform duration-300 ease-in-out md:hidden",
+          isOpen ? "translate-x-0" : "translate-x-full"
+        )}
+      >
+        <div className="flex flex-col h-full">
+          {/* Menu Header */}
+          <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+            <span className="font-semibold text-gray-900">Menu</span>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            <div className="mb-2">
+              <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                Main
+              </p>
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200",
+                      isActive
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-gray-600 hover:bg-gray-50"
+                    )}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="pt-4 border-t border-gray-100">
+              <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                More
+              </p>
+              {moreNavItems.map((item) => {
+                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200",
+                      isActive
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-gray-600 hover:bg-gray-50"
+                    )}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="pt-4 border-t border-gray-100">
+              <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                Legal
+              </p>
+              {legalNavItems.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    target="_blank"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-gray-600 hover:bg-gray-50"
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {isAdmin && (
+              <div className="pt-4 border-t border-gray-100">
+                <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                  Admin
+                </p>
+                <Link
+                  href="/admin"
+                  onClick={() => setIsOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200",
+                    pathname.startsWith("/admin")
+                      ? "bg-orange-100 text-orange-600 font-semibold"
+                      : "text-gray-600 hover:bg-orange-50 hover:text-orange-600"
+                  )}
+                >
+                  <ShieldCheck className="w-5 h-5" />
+                  <span>Admin Panel</span>
+                </Link>
+              </div>
+            )}
+          </nav>
+
+          {/* Logout Button */}
+          <div className="p-4 border-t border-gray-100">
+            <SignOutButton>
+              <button className="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-gray-600 hover:bg-red-50 hover:text-red-600 w-full">
+                <LogOut className="w-5 h-5" />
+                <span>Log Out</span>
+              </button>
+            </SignOutButton>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+}
+
+// Keep BottomNavigation as an alternative option (currently not used)
 export function BottomNavigation() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 pb-safe z-50 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 pb-safe z-50 hidden">
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
           const isActive = pathname === item.href;

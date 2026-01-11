@@ -295,7 +295,7 @@ function MembersContent() {
   if (showImport) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="gradient-primary px-4 pt-12 pb-6 md:pt-8">
+        <div className="gradient-primary px-4 pt-6 pb-6 md:pt-8">
           <div className="max-w-2xl mx-auto">
             <button
               onClick={() => {
@@ -474,7 +474,7 @@ function MembersContent() {
   if (isAdding) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="gradient-primary px-4 pt-12 pb-6 md:pt-8">
+        <div className="gradient-primary px-4 pt-6 pb-6 md:pt-8">
           <div className="max-w-2xl mx-auto">
             <button
               onClick={() => {
@@ -606,7 +606,7 @@ function MembersContent() {
   return (
     <div>
       {/* Header */}
-      <div className="gradient-primary rounded-b-[2rem] px-4 pt-12 pb-6 md:pt-8 md:rounded-none">
+      <div className="gradient-primary rounded-b-[2rem] px-4 pt-6 pb-6 md:pt-8 md:rounded-none">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>

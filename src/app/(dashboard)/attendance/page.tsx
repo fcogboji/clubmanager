@@ -130,7 +130,7 @@ function AttendanceContent() {
   if (!selectedClass) {
     return (
       <div>
-        <div className="gradient-primary rounded-b-[2rem] px-4 pt-12 pb-6 md:pt-8 md:rounded-none">
+        <div className="gradient-primary rounded-b-[2rem] px-4 pt-6 pb-6 md:pt-8 md:rounded-none">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold text-white">Take Attendance</h1>
             <p className="text-white/80 text-sm">Select a class to continue</p>

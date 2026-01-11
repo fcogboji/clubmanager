@@ -255,7 +255,7 @@ function SettingsContent() {
       )}
 
       {/* Header */}
-      <div className="gradient-primary rounded-b-[2rem] px-4 pt-12 pb-6 md:pt-8 md:rounded-none">
+      <div className="gradient-primary rounded-b-[2rem] px-4 pt-6 pb-6 md:pt-8 md:rounded-none">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
             <Settings className="w-6 h-6" />
@@ -369,6 +369,38 @@ function SettingsContent() {
                 </Button>
               </div>
             </Card>
+
+            {/* Public Registration Link */}
+            {club && (
+              <Card>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Public Registration</h2>
+                <p className="text-gray-600 mb-4">
+                  Share this link with potential members so they can register and join your club directly.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1 px-4 py-3 bg-gray-50 rounded-xl text-sm font-mono text-gray-700 overflow-x-auto">
+                    {typeof window !== "undefined" ? window.location.origin : ""}/join/{club.slug}
+                  </div>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      const url = `${window.location.origin}/join/${club.slug}`;
+                      navigator.clipboard.writeText(url);
+                      alert("Link copied to clipboard!");
+                    }}
+                  >
+                    Copy Link
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => window.open(`/join/${club.slug}`, "_blank")}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Preview
+                  </Button>
+                </div>
+              </Card>
+            )}
           </div>
         )}
 

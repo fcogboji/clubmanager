@@ -91,7 +91,7 @@ export default function MemberDetailPage() {
   return (
     <div>
       {/* Header */}
-      <div className="gradient-primary px-4 pt-12 pb-8 md:pt-8">
+      <div className="gradient-primary px-4 pt-6 pb-8 md:pt-8">
         <div className="max-w-2xl mx-auto">
           <button
             onClick={() => router.push("/members")}

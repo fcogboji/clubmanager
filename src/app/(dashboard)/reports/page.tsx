@@ -127,7 +127,7 @@ export default function ReportsPage() {
   return (
     <div>
       {/* Header */}
-      <div className="gradient-primary rounded-b-[2rem] px-4 pt-12 pb-6 md:pt-8 md:rounded-none">
+      <div className="gradient-primary rounded-b-[2rem] px-4 pt-6 pb-6 md:pt-8 md:rounded-none">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
             <BarChart3 className="w-6 h-6" />

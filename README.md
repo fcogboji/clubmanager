@@ -22,6 +22,19 @@ A comprehensive web application for managing clubs, members, classes, attendance
 - **Subscription Status** - View payment status and upcoming renewals
 - **Attendance History** - Track recent attendance records
 
+### Public Registration
+- **Self-Service Registration** - Public page for new members to join clubs directly
+- **Class Selection** - Browse and select from available classes
+- **Plan Selection** - Choose membership plans with transparent pricing
+- **Integrated Payments** - Seamless Stripe checkout for paid memberships
+- **Account Creation** - Automatic member account setup with email verification
+
+### Mobile-First Design
+- **Responsive UI** - Fully responsive design for all screen sizes
+- **Mobile Navigation** - Hamburger menu with slide-out drawer on mobile
+- **Touch-Friendly** - 44px minimum tap targets for all interactive elements
+- **iOS Safe Areas** - Proper handling of notches and home indicators
+
 ### Security Features
 - **Authentication** - Clerk-based authentication for admins
 - **CSRF Protection** - Token-based protection for form submissions
@@ -182,6 +195,7 @@ src/
 | Route | Description |
 |-------|-------------|
 | `/` | Landing page |
+| `/join/[slug]` | Public registration for a club |
 | `/industries` | Industry-specific pages |
 | `/terms` | Terms of Service |
 | `/privacy` | Privacy Policy |
@@ -224,6 +238,10 @@ src/
 - `POST /api/account/invite` - Invite members to portal
 - `GET /api/account/verify` - Verify email
 - `POST /api/account/verify` - Resend verification
+
+### Public Registration
+- `GET /api/public/club/[slug]` - Get public club info, classes, and plans
+- `POST /api/public/register` - Register new member with account creation
 
 ### Other
 - `GET /api/csrf` - Get CSRF token
